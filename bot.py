@@ -25,7 +25,7 @@ async def cmd_start(message: types.Message):
     button_2 = InlineKeyboardButton(text="🔎 Помощь", callback_data="help")
     inline_kb.add(button_1, button_2)
 
-    await bot.send_sticker(message.chat.id, STIKER_TOKEN, reply_to_message_id=message.message_id)
+    await bot.send_sticker(message.chat.id, STIKER_TOKEN)
     await message.answer(message_text, reply_markup=inline_kb, )
 
 
