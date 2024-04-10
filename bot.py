@@ -17,7 +17,7 @@ stt = STT()
 async def cmd_start(message: types.Message):
     user_name = message.from_user.first_name
     # Create message text
-    message_text = f"Привет, {user_name}! Я напишу биографию любого человека, тебе достаточно ответить на пару вопросов!"
+    message_text = f"Привет, {user_name}! Я бот Олег. Напишу биографию любого человека, тебе достаточно ответить на пару вопросов!"
 
     # Create inline buttons
     inline_kb = InlineKeyboardMarkup(row_width=1)
@@ -25,8 +25,9 @@ async def cmd_start(message: types.Message):
     button_2 = InlineKeyboardButton(text="🔎 Помощь", callback_data="help")
     inline_kb.add(button_1, button_2)
 
-    # Send message with buttons
-    await message.reply(message_text, reply_markup=inline_kb)
+    await bot.send_sticker(message.chat.id, "CAACAgIAAxkBAAEEmw1mFhBU0PWUeGiUnepIBjp6coBrMQACWkkAAr7AsUheAeJQ06nKEzQE", reply_to_message_id=message.message_id)
+    await message.answer(message_text, reply_markup=inline_kb, )
+
 
 # Handler for receiving voice, audio, and document messages
 @dp.message_handler(content_types=[
