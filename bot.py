@@ -1,4 +1,4 @@
-import logging
+
 import os
 from pathlib import Path
 
@@ -8,11 +8,11 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from stt import STT
 from config import TOKEN, STIKER_TOKEN
 
-bot = Bot(token=TOKEN)  # Bot object
-dp = Dispatcher(bot)  # Dispatcher for the bot
+bot = Bot(token=TOKEN)
+dp = Dispatcher(bot)
 stt = STT()
 
-# Handler for /start and /help commands
+
 @dp.message_handler(commands=["start", "help"])
 async def cmd_start(message: types.Message):
     user_name = message.from_user.first_name
@@ -29,7 +29,7 @@ async def cmd_start(message: types.Message):
     await message.answer(message_text, reply_markup=inline_kb, )
 
 
-# Handler for receiving voice, audio, and document messages
+"""Здесь идет работа с распознаванием голосовых"""
 @dp.message_handler(content_types=[
     types.ContentType.VOICE,
     types.ContentType.AUDIO,
