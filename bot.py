@@ -11,7 +11,7 @@ from questions import  base_questions
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-
+import kb
 bot = Bot(token=TOKEN)
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
@@ -21,17 +21,16 @@ stt = STT()
 
 @dp.message_handler(commands=["start", "help"])
 async def cmd_start(message: types.Message):
-    user_name = message.from_user.first_name
-    
-    message_text = f"Привет, {user_name}! Я бот Олег. Напишу биографию любого человека, тебе достаточно ответить на пару вопросов!"
 
-    reply_kb = ReplyKeyboardMarkup(resize_keyboard=True)
-    button_1 = KeyboardButton(text="📝 Написать биографию")
-    button_2 = KeyboardButton(text="🔎 Помощь")
-    reply_kb.add(button_1, button_2)
-    
-    await bot.send_sticker(message.chat.id, STIKER_TOKEN)  # This line should be awaited
-    await message.answer(message_text, reply_markup=reply_kb)
+    user_name = message.from_user.first_name
+    message_text = f"Привет, {user_name}! Я бот Олег. Напишу биографию любого человека, тебе достаточно ответить на пару вопросов!"
+    await bot.send_sticker(message.chat.id, STIKER_TOKEN)
+    await message.answer(message_text, reply_markup=kb.reply_kb)
+
+
+@dp.message_handler(lambda message: message.text == "📝 Генерация")
+async def cmd_start(message: types.Message):
+    await message.answer("Выберите (на клавиатуре)", reply_markup=kb.choose_kb)
 
 
 
@@ -40,10 +39,10 @@ async def cmd_start(message: types.Message):
 class BioForm(StatesGroup):
     answering_questions = State()
 
-@dp.message_handler(lambda message: message.text == "📝 Написать биографию")
+@dp.message_handler(lambda message: message.text == "Биография")
 async def process_bio_request(message: types.Message, state: FSMContext):
     await state.reset_state()
-    await message.answer("Давайте ответим на несколько простых вопросов")
+    await message.answer("Давайте ответим на несколько простых вопросов", reply_markup=kb.home_kb)
     await BioForm.answering_questions.set()
 
 @dp.message_handler(state=BioForm.answering_questions)
