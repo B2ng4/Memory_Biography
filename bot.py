@@ -1,7 +1,7 @@
 
 import os
 from pathlib import Path
-
+import asyncio
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
@@ -19,28 +19,43 @@ stt = STT()
 
 
 
-
 @dp.message_handler(commands=["start", "help"])
 async def cmd_start(message: types.Message):
     user_name = message.from_user.first_name
-    # Create message text
+    
     message_text = f"Привет, {user_name}! Я бот Олег. Напишу биографию любого человека, тебе достаточно ответить на пару вопросов!"
 
-    # Create inline buttons
     reply_kb = ReplyKeyboardMarkup(resize_keyboard=True)
     button_1 = KeyboardButton(text="📝 Написать биографию")
     button_2 = KeyboardButton(text="🔎 Помощь")
     reply_kb.add(button_1, button_2)
-
+    
     await bot.send_sticker(message.chat.id, STIKER_TOKEN)  # This line should be awaited
     await message.answer(message_text, reply_markup=reply_kb)
 
-@dp.message_handler(lambda message: message.text == "📝 Написать биографию")
-async def process_bio_request(message: types.Message):
 
+class BioForm(StatesGroup):
+    answering_questions = State()
+
+@dp.message_handler(lambda message: message.text == "📝 Написать биографию")
+async def process_bio_request(message: types.Message, state: FSMContext):
+    await state.reset_state()
     await message.answer("Давайте ответим на несколько простых вопросов")
-    for question in base_questions:
-        await message.answer(question)  # Предполагается, что base_questions - это список вопросов
+    await BioForm.answering_questions.set()
+
+@dp.message_handler(state=BioForm.answering_questions)
+async def answer_question(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        if "answers" not in data:
+            data["answers"] = []
+
+        data["answers"].append(message.text)
+
+        if len(data["answers"]) < len(base_questions):
+            await message.answer(base_questions[len(data["answers"]) - 1]) 
+        else:
+            await message.answer("Ваша биография:\n" + "\n".join(data["answers"][1:]))
+            await state.finish()
 
 
 
