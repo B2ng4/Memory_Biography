@@ -34,6 +34,9 @@ async def cmd_start(message: types.Message):
     await message.answer(message_text, reply_markup=reply_kb)
 
 
+
+
+"""Тут идет обработка сообщений"""
 class BioForm(StatesGroup):
     answering_questions = State()
 
@@ -54,9 +57,11 @@ async def answer_question(message: types.Message, state: FSMContext):
         if len(data["answers"]) < len(base_questions):
             await message.answer(base_questions[len(data["answers"]) - 1]) 
         else:
-            await message.answer("Ваша биография:\n" + "\n".join(data["answers"][1:]))
+            await message.answer("Ваша биография:\n" + "\n".join(data["answers"][1:])) ##############################Это можно удалить (делал для проверки) !!только эта строка
             await state.finish()
-
+        PROMPT = "" #########################Это переменная принимает в себя ответы на вопрсы
+        if len(data["answers"]) == len(base_questions):
+            PROMPT = " ".join(data["answers"])
 
 
 
