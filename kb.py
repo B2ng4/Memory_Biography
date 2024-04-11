@@ -19,3 +19,11 @@ choose_kb.add(epitaph_bt, biography_bt)
 home_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 back_bt = KeyboardButton(text="В главное меню")
 home_kb.add(back_bt)
+
+
+"""Клава исправления"""
+
+correct_kb = ReplyKeyboardMarkup(resize_keyboard=True)
+ok_bt = KeyboardButton(text="Отлично✅")
+redactor_bt = KeyboardButton(text="Регенерировать♻️️")
+correct_kb.add(ok_bt,redactor_bt)
