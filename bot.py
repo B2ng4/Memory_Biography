@@ -4,13 +4,20 @@ from pathlib import Path
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from stt import STT
 from config import TOKEN, STIKER_TOKEN
+from questions import  base_questions
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 bot = Bot(token=TOKEN)
-dp = Dispatcher(bot)
+storage = MemoryStorage()
+dp = Dispatcher(bot, storage=storage)
 stt = STT()
+
+
 
 
 @dp.message_handler(commands=["start", "help"])
@@ -20,23 +27,41 @@ async def cmd_start(message: types.Message):
     message_text = f"Привет, {user_name}! Я бот Олег. Напишу биографию любого человека, тебе достаточно ответить на пару вопросов!"
 
     # Create inline buttons
-    inline_kb = InlineKeyboardMarkup(row_width=1)
-    button_1 = InlineKeyboardButton(text="📝 Написать биографию", callback_data="create")
-    button_2 = InlineKeyboardButton(text="🔎 Помощь", callback_data="help")
-    inline_kb.add(button_1, button_2)
+    reply_kb = ReplyKeyboardMarkup(resize_keyboard=True)
+    button_1 = KeyboardButton(text="📝 Написать биографию")
+    button_2 = KeyboardButton(text="🔎 Помощь")
+    reply_kb.add(button_1, button_2)
 
-    await bot.send_sticker(message.chat.id, STIKER_TOKEN)
-    await message.answer(message_text, reply_markup=inline_kb, )
+    await bot.send_sticker(message.chat.id, STIKER_TOKEN)  # This line should be awaited
+    await message.answer(message_text, reply_markup=reply_kb)
+
+@dp.message_handler(lambda message: message.text == "📝 Написать биографию")
+async def process_bio_request(message: types.Message):
+
+    await message.answer("Давайте ответим на несколько простых вопросов")
+    for question in base_questions:
+        await message.answer(question)  # Предполагается, что base_questions - это список вопросов
+
+
+
+
+
+
+
+
+
+
+
 
 
 """Здесь идет работа с распознаванием голосовых"""
 @dp.message_handler(content_types=[
     types.ContentType.VOICE,
-    types.ContentType.AUDIO,
     types.ContentType.DOCUMENT
 ])
 async def voice_message_handler(message: types.Message):
     """
+    types.ContentType.AUDIO,
     Handler for receiving voice, audio, and document messages.
     """
     if message.content_type == types.ContentType.VOICE:
