@@ -41,6 +41,7 @@ async def cmd_start(message: types.Message):
 """Тут идет обработка сообщений"""
 class BioForm(StatesGroup):
     answering_questions = State()
+    editing_biography = State()
 
 @dp.message_handler(lambda message: message.text == "Биография")
 async def process_bio_request(message: types.Message, state: FSMContext):
@@ -71,6 +72,42 @@ async def answer_question(message: types.Message, state: FSMContext):
             await message.answer("*Отлично! Ваши ответы приняты.* Предлагаю вам в свободной форме (можно голосовым сообщением 🎙️) рассказать о данном человеке более подробно. Мне нужны подробности о его семье, образовании, карьере и достижениях, чтобы создать интересный и информативный текст. Если у вас есть эти данные, пожалуйста, предоставьте их мне для написания биографии." , parse_mode="Markdown")
 
 
+
+
+
+
+
+"""Редактирование биографии"""
+
+
+@dp.message_handler(lambda message: message.text == "Редактировать⚙️")
+async def edit_biography(message: types.Message):
+    await message.answer("Введите отредактированный текст биографии:", reply_markup=kb.home_kb)
+    await BioForm.editing_biography.set()
+
+@dp.message_handler(state=BioForm.editing_biography)
+async def process_edited_biography(message: types.Message, state: FSMContext):
+    global Biography
+    edited_biography = message.text
+    Biography = edited_biography
+    async with state.proxy() as data:
+        biography_message_id = data["biography_message_id"]
+    await bot.edit_message_text(chat_id=message.chat.id, message_id=biography_message_id, text=edited_biography, reply_markup=kb.correct_kb)
+    await message.answer("Биография успешно отредактирована!")
+    await state.finish()
+
+
+
+"""Регенерация биографии"""
+@dp.message_handler(lambda message: message.text == "Регенерировать♻️")
+async def redactor(message: types.Message):
+    global Biography
+    regen_bio = answer3(Biography)
+    await message.answer("⚙️⚙️⚙️*Регенерирую*⚙️⚙️⚙️", parse_mode="Markdown")
+
+    await message.answer(regen_bio, reply_markup=kb.home_kb, parse_mode="Markdown")
+
+
 """Здесь идет работа с распознаванием голосовых"""
 @dp.message_handler(content_types=[
     types.ContentType.VOICE,
@@ -86,26 +123,19 @@ async def voice_message_handler(message: types.Message):
 
     await bot.download_file(file_path, destination=file_on_disk)
     await message.reply("Аудио получено ✔️")
-
+    await message.answer("⚙️⚙️⚙️*Генерирую*⚙️⚙️⚙️", parse_mode="Markdown")
     text = stt.audio_to_text(file_on_disk)
     os.remove(f"{file_id}.tmp")
-
     Biography = answer2(preprompt,text)
-
-    await message.answer("⚙️⚙️⚙️*Генерирую*⚙️⚙️⚙️", parse_mode="Markdown")
     await message.answer("*Итоговая биография*✔️ ️", parse_mode="Markdown")
     await message.answer(Biography, reply_markup=kb.correct_kb)
 
 
 
-"""Регенерация биографии"""
-@dp.message_handler(lambda message: message.text == "Регенерировать♻️")
-async def redactor(message: types.Message):
-    global Biography
-    regen_bio = answer3(Biography)
-    await message.answer("⚙️⚙️⚙️*Регенерирую*⚙️⚙️⚙️", parse_mode="Markdown")
 
-    await message.answer(regen_bio, reply_markup=kb.home_kb, parse_mode="Markdown")
+
+
+
 
 
 if __name__ == "__main__":
