@@ -114,23 +114,21 @@ async def back_home(message: types.Message):
 
 
 """Редактирование биографии"""
-
-
 @dp.message_handler(lambda message: message.text == "Редактировать⚙️")
 async def edit_biography(message: types.Message):
     await message.answer("Введите отредактированный текст биографии:", reply_markup=kb.home_kb)
     await BioForm.editing_biography.set()
 
-# @dp.message_handler(state=BioForm.editing_biography)
-# async def process_edited_biography(message: types.Message, state: FSMContext):
-#     global Biography
-#     edited_biography = message.text
-#     Biography = edited_biography
-#     async with state.proxy() as data:
-#         biography_message_id = data["biography_message_id"]
-#     await bot.edit_message_text(chat_id=message.chat.id, message_id=biography_message_id, text=edited_biography, reply_markup=kb.correct_kb)
-#     await message.answer("Биография успешно отредактирована!")
-#     await state.finish()
+@dp.message_handler(state=BioForm.editing_biography)
+async def process_edited_biography(message: types.Message, state: FSMContext):
+    global Biography
+    edited_biography = message.text
+    Biography = edited_biography
+    async with state.proxy() as data:
+        biography_message_id = data["biography_message_id"]
+    await bot.edit_message_text(chat_id=message.chat.id, message_id=biography_message_id, text=edited_biography, reply_markup=kb.correct_kb)
+    await message.answer("Биография успешно отредактирована!")
+    await state.finish()
 
 
 
