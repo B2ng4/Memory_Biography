@@ -8,12 +8,12 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 from stt import STT
 from config import TOKEN, STIKER1_TOKEN,  STIKER2_TOKEN
-from questions import  base_questions
+from questions import  base_questions, epit_questions
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 import kb
-from gigachat_answers import answer1,answer2,answer3
+from gigachat_answers import answer1,answer2,answer3, answer4
 
 bot = Bot(token=TOKEN)
 storage = MemoryStorage()
@@ -27,7 +27,7 @@ global Biography
 async def cmd_start(message: types.Message):
 
     user_name = message.from_user.first_name
-    message_text = f"Привет, {user_name}! Я бот *Олег*. Напишу биографию любого человека, тебе достаточно ответить на пару вопросов!"
+    message_text = f"Привет, {user_name}! Я бот *Олег*. Сгенерирую биографию любого человека, тебе достаточно ответить на пару вопросов!"
     await bot.send_sticker(message.chat.id, STIKER1_TOKEN)
     await message.answer(message_text, reply_markup=kb.reply_kb, parse_mode="Markdown")
 
@@ -42,6 +42,7 @@ async def cmd_start(message: types.Message):
 class BioForm(StatesGroup):
     answering_questions = State()
     editing_biography = State()
+    answering_questions_epit = State()
 
 @dp.message_handler(lambda message: message.text == "Биография")
 async def process_bio_request(message: types.Message, state: FSMContext):
@@ -54,26 +55,61 @@ async def process_bio_request(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=BioForm.answering_questions)
 async def answer_question(message: types.Message, state: FSMContext):
-    global preprompt
+    if message.text == "В главное меню":
+        await state.finish()
+        await message.answer("Возврат в главное меню", reply_markup=kb.reply_kb)
+    else:
+        global preprompt
+        async with state.proxy() as data:
+            if "answers" not in data:
+                data["answers"] = []
+
+            data["answers"].append(message.text)
+
+            if len(data["answers"]) < len(base_questions):
+                await message.answer(base_questions[len(data["answers"])], parse_mode="Markdown")
+            else:
+                await state.finish()
+                PROMPT = "\n".join([f"{j}: {i}" for j, i in zip(base_questions, data["answers"])])
+                await message.answer("⚙️⚙️⚙️*Обрабатываю*⚙️⚙️⚙️", parse_mode="Markdown")
+                preprompt = answer1(PROMPT) #генерация предварительного промпта
+                await bot.send_sticker(message.chat.id, STIKER2_TOKEN)
+                await message.answer("*Отлично! Ваши ответы приняты.* Предлагаю вам в свободной форме (можно голосовым сообщением 🎙️) рассказать о данном человеке более подробно. Мне нужны подробности о его семье, образовании, карьере и достижениях, чтобы создать интересный и информативный текст. Если у вас есть эти данные, пожалуйста, предоставьте их мне для написания биографии." , parse_mode="Markdown")
+
+
+@dp.message_handler(lambda message: message.text == "Эпитафия")
+async def process_epitaph_request(message: types.Message, state: FSMContext):
+    await state.reset_state()
+    await message.answer("*Давайте ответим на несколько простых вопросов для эпитафии💬*", reply_markup=kb.home_kb, parse_mode="Markdown")
+    await BioForm.answering_questions_epit.set()
+    # Отправляем первый вопрос сразу после установки состояния
+    if epit_questions:  # Проверяем, что список вопросов не пуст
+        await message.answer(epit_questions[0], parse_mode="Markdown")
+
+@dp.message_handler(state=BioForm.answering_questions_epit)
+async def answer_epit_question(message: types.Message, state: FSMContext):
+    global doublepromt
     async with state.proxy() as data:
-        if "answers" not in data:
-            data["answers"] = []
+        if "epit_answers" not in data:
+            data["epit_answers"] = []
 
-        data["answers"].append(message.text)
+        data["epit_answers"].append(message.text)
 
-        if len(data["answers"]) < len(base_questions):
-            await message.answer(base_questions[len(data["answers"])], parse_mode="Markdown")
+        if len(data["epit_answers"]) < len(epit_questions):
+            await message.answer(epit_questions[len(data["epit_answers"])], parse_mode="Markdown")
         else:
             await state.finish()
-            PROMPT = "\n".join([f"{j}: {i}" for j, i in zip(base_questions, data["answers"])])
+            PROMPT = "\n".join([f"{j}: {i}" for j, i in zip(epit_questions, data["epit_answers"])])
             await message.answer("⚙️⚙️⚙️*Обрабатываю*⚙️⚙️⚙️", parse_mode="Markdown")
-            preprompt = answer1(PROMPT) #генерация предварительного промпта
+            doublepromt = answer4(PROMPT) 
             await bot.send_sticker(message.chat.id, STIKER2_TOKEN)
-            await message.answer("*Отлично! Ваши ответы приняты.* Предлагаю вам в свободной форме (можно голосовым сообщением 🎙️) рассказать о данном человеке более подробно. Мне нужны подробности о его семье, образовании, карьере и достижениях, чтобы создать интересный и информативный текст. Если у вас есть эти данные, пожалуйста, предоставьте их мне для написания биографии." , parse_mode="Markdown")
+            await message.answer( doublepromt, parse_mode="Markdown")
 
 
-
-
+"""Кнопка назад"""
+@dp.message_handler(lambda message: message.text == "В главное меню")
+async def back_home(message: types.Message):
+    await message.answer("Возврат в главное меню", reply_markup=kb.reply_kb)
 
 
 

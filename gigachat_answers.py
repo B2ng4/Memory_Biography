@@ -17,3 +17,8 @@ def answer3(text1: str):
     giga = GigaChat(credentials="Y2Q3MDIzMGItZDY3OS00MjcwLWI1NWEtMGExNTMyMDUzYTAwOmNmNzU1MmM4LThjMGMtNDk3OS05YWM1LTFiMTJjNjExMjJhMQ==", verify_ssl_certs=False, model="GigaChat-Pro")
     response = giga.chat(f"{text1}/Попробуй немного изменить текст, сделай его другой вариант ")
     return response.choices[0].message.content
+
+def answer4(text1: str):
+    giga = GigaChat(credentials="Y2Q3MDIzMGItZDY3OS00MjcwLWI1NWEtMGExNTMyMDUzYTAwOjk1NjU2OTAyLWFmNWYtNGE3MS04NmY3LWQxYjAzMDBmMGNkMg==", verify_ssl_certs=False)
+    response = giga.chat(f"{text1}/Сгенерируй эпитафию")
+    return response.choices[0].message.content
