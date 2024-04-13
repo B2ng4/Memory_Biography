@@ -5,7 +5,7 @@ from config import MEMORY_TOKEN
 
 
 
-def upload_bio(name:str,placeOfBirth:str, date:str, placeOfDeath:str, citizenship:str, education:str, occupation:str, awards:str, biography:str, epitaphy = "КРАТКАЯ ЭПИТАФИЯ", user=""):
+def upload_bio(name:str,placeOfBirth:str, date:str, placeOfDeath:str, citizenship:str, education:str, occupation:str, awards:str, biography:str, epitaphy = "КРАТКАЯ ЭПИТАФИЯ", user="Пользователь"):
     epitaphy = epitaphy.replace('"', '')
     date = date.split(" ")
     start = (date[0]).split(".")
