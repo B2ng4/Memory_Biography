@@ -27,3 +27,13 @@ correct_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 replace_bt = KeyboardButton(text="Редактировать⚙️")
 redactor_bt = KeyboardButton(text="Регенерировать")
 correct_kb.add(replace_bt, redactor_bt)
+
+"""Клавиатура сохранения"""
+
+
+save_kb = ReplyKeyboardMarkup(resize_keyboard=True)
+back_bt = KeyboardButton(text="В главное меню")
+save_bt = KeyboardButton(text="Сохранить")
+
+save_kb.add(save_bt)
+save_kb.add(back_bt)
