@@ -15,7 +15,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 import kb
 from gigachat_answers import answer1,answer2,answer3, answer4
 from BD import DB_bio
-
+from MemoryAPI import upload_bio
 
 bot = Bot(token=TOKEN)
 storage = MemoryStorage()
@@ -25,9 +25,15 @@ stt = STT()
 DB = DB_bio("biography.db")
 
 
-
+"""Сделано на скорую руку, не судите!"""
 global preprompt
 global Biography
+global gen
+global doublepromt
+doublepromt = ""
+gen = []
+
+
 @dp.message_handler(commands=["start"])
 async def cmd_start(message: types.Message):
 
@@ -39,7 +45,7 @@ async def cmd_start(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "📝 Генерация")
 async def cmd_start(message: types.Message):
-    await message.answer("Выберите (на клавиатуре)", reply_markup=kb.choose_kb)
+    await message.answer("Выберите (на клавиатуре)", reply_markup=kb.choose_epitaphy_kb)
 
 
 
@@ -52,7 +58,6 @@ class BioForm(StatesGroup):
 
 @dp.message_handler(lambda message: message.text == "Биография")
 async def process_bio_request(message: types.Message, state: FSMContext):
-    await state.reset_state()
     await message.answer("*Давайте ответим на несколько простых базовых вопросов📃*", reply_markup=kb.home_kb, parse_mode="Markdown")
     await BioForm.answering_questions.set()
     # Отправляем первый вопрос сразу после установки состояния
@@ -68,8 +73,6 @@ async def get_answers(state: FSMContext):
     return user_data.get("answers", [])
 
 
-
-
 @dp.message_handler(state=BioForm.answering_questions)
 async def answer_question(message: types.Message, state: FSMContext):
     if message.text == "В главное меню":
@@ -78,6 +81,7 @@ async def answer_question(message: types.Message, state: FSMContext):
     else:
         answers = await get_answers(state)
         answers.append(message.text)
+        gen.append(message.text)
         await state.update_data(answers=answers)
 
         if len(answers) < len(base_questions):
@@ -91,6 +95,7 @@ async def answer_question(message: types.Message, state: FSMContext):
             await bot.send_sticker(message.chat.id, STIKER2_TOKEN)
             await message.answer("*Отлично! Ваши ответы приняты.* Предлагаю вам в свободной форме (можно голосовым сообщением 🎙️) рассказать о данном человеке более подробно. Мне нужны подробности о его семье, образовании, карьере и достижениях, чтобы создать интересный и информативный текст. Если у вас есть эти данные, пожалуйста, предоставьте их мне для написания биографии.", parse_mode="Markdown")
 
+
 @dp.message_handler(lambda message: message.text == "Эпитафия")
 async def process_epitaph_request(message: types.Message, state: FSMContext):
     await state.reset_state()
@@ -100,9 +105,10 @@ async def process_epitaph_request(message: types.Message, state: FSMContext):
     if epit_questions:  # Проверяем, что список вопросов не пуст
         await message.answer(epit_questions[0], parse_mode="Markdown")
 
+
 @dp.message_handler(state=BioForm.answering_questions_epit)
 async def answer_epit_question(message: types.Message, state: FSMContext):
-    global doublepromt
+
     async with state.proxy() as data:
         if "epit_answers" not in data:
             data["epit_answers"] = []
@@ -115,9 +121,16 @@ async def answer_epit_question(message: types.Message, state: FSMContext):
             await state.finish()
             PROMPT = "\n".join([f"{j}: {i}" for j, i in zip(epit_questions, data["epit_answers"])])
             await message.answer("⚙️⚙️⚙️*Обрабатываю*⚙️⚙️⚙️", parse_mode="Markdown")
-            doublepromt = answer4(PROMPT) 
+            doublepromt = answer4(PROMPT)
+            #doublepromt = "Здесь будет эпитафия"
+            user = message.from_user.first_name
+
+
             await bot.send_sticker(message.chat.id, STIKER2_TOKEN)
-            await message.answer( doublepromt, parse_mode="Markdown")
+            await message.answer(doublepromt, parse_mode="Markdown", reply_markup=kb.choose_bio_kb)
+
+
+
 
 
 """Кнопка назад"""
@@ -149,6 +162,7 @@ async def voice_message_handler(message: types.Message):
 
 
         Biography = answer2(preprompt,text)
+        #Biography = "Родился выдающийся советский композитор Дмитрий Шостакович в Санкт-Петербурге в доме"
         await message.answer("*Итоговая биография*✔️ ️", parse_mode="Markdown")
         await message.answer(Biography, reply_markup=kb.correct_kb)
 
@@ -167,20 +181,26 @@ async def voice_message_handler(message: types.Message):
 
     @dp.message_handler(state=BioForm.editing_biography)
     async def process_edited_biography(message: types.Message, state: FSMContext):
-        edited_biography = message.text
+        # Сохраняем отредактированную биографию в контексте состояния
+        await state.update_data(edited_biography=message.text)
         await message.answer("Биография успешно отредактирована!")
-        await message.answer(edited_biography)
-        await message.answer("Нажмите кнопку 'Сохранить' для сохранения биографии", reply_markup=kb.save_kb)
+        await message.answer(message.text)
+        await message.answer("Нажмите кнопку 'Отправить' для сохранения биографии", reply_markup=kb.save_kb)
         await BioForm.saving_biography.set()
 
-    @dp.message_handler(state=BioForm.saving_biography, text="Сохранить")
+    @dp.message_handler(state=BioForm.saving_biography, text="Отправить🌐")
     async def save(message: types.Message, state: FSMContext):
-        edited_biography = message.text
-        print(edited_biography)
+        # Извлекаем отредактированную биографию из контекста состояния
+        user_data = await state.get_data()
+        edited_biography = user_data.get('edited_biography')
         user = message.from_user.first_name
-        DB.execute_bio(user,edited_biography)
-        await message.answer("Биография успешно сохранена!", reply_markup=kb.home_kb)
+
+        if upload_bio(gen[0], gen[1], gen[2], gen[3], gen[4], gen[5], gen[6], gen[7], edited_biography, doublepromt, user):
+            await message.answer("Биография успешно отправлена!", reply_markup=kb.home_kb)
+
         await state.finish()
+
+
 
 if __name__ == "__main__":
     # Start the bot
