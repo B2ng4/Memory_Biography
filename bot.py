@@ -178,9 +178,9 @@ async def voice_message_handler(message: types.Message):
     @dp.message_handler(state=BioForm.saving_biography, text="Сохранить")
     async def save(message: types.Message, state: FSMContext):
         edited_biography = message.text
-        #answers = await get_answers(state)
         print(edited_biography)
-        #DB.execute_bio(answers[0],edited_biography)
+        user = message.from_user.first_name
+        DB.execute_bio(user,edited_biography)
         await message.answer("Биография успешно сохранена!", reply_markup=kb.home_kb)
         await state.finish()
 
