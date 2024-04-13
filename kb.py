@@ -25,5 +25,5 @@ home_kb.add(back_bt)
 
 correct_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 replace_bt = KeyboardButton(text="Редактировать⚙️")
-redactor_bt = KeyboardButton(text="Регенерировать♻️️")
+redactor_bt = KeyboardButton(text="Регенерировать")
 correct_kb.add(replace_bt, redactor_bt)
