@@ -170,8 +170,6 @@ async def voice_message_handler(message: types.Message):
         edited_biography = message.text
         await message.answer("Биография успешно отредактирована!")
         await message.answer(edited_biography)
-
-       # Отправляем клавиатуру с кнопкой "Сохранить"
         await message.answer("Нажмите кнопку 'Сохранить' для сохранения биографии", reply_markup=kb.save_kb)
         await BioForm.saving_biography.set()
 
