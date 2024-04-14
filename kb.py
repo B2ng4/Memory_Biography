@@ -12,7 +12,7 @@ reply_kb.add(button_1, button_2)
 """Клава выбора Эпитафии"""
 choose_epitaphy_kb = ReplyKeyboardMarkup(resize_keyboard=True)
 #biography_bt = KeyboardButton(text="Биография")
-epitaph_bt = KeyboardButton(text="Эпитафия")
+epitaph_bt = KeyboardButton(text="Начать")
 choose_epitaphy_kb.add(epitaph_bt)
 
 

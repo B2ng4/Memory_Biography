@@ -40,7 +40,7 @@ def upload_bio(name:str,placeOfBirth:str, date:str, placeOfDeath:str, citizenshi
         "start": data_start,
         "end": data_end,
         "epitaph": epitaphy,
-        "author_epitaph": "АВТОР ЭПИТАФИИ",
+        "author_epitaph": user,
         "page_type_id": "1",
 
         "biographies": [

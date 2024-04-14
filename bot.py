@@ -45,7 +45,7 @@ async def cmd_start(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "📝 Генерация")
 async def cmd_start(message: types.Message):
-    await message.answer("Выберите (на клавиатуре)", reply_markup=kb.choose_epitaphy_kb)
+    await message.answer("Нажмите кнопку начать (На клавиатуре)", reply_markup=kb.choose_epitaphy_kb)
 
 
 
@@ -96,7 +96,7 @@ async def answer_question(message: types.Message, state: FSMContext):
             await message.answer("*Отлично! Ваши ответы приняты.* Предлагаю вам в свободной форме (можно голосовым сообщением 🎙️) рассказать о данном человеке более подробно. Мне нужны подробности о его семье, образовании, карьере и достижениях, чтобы создать интересный и информативный текст. Если у вас есть эти данные, пожалуйста, предоставьте их мне для написания биографии.", parse_mode="Markdown")
 
 
-@dp.message_handler(lambda message: message.text == "Эпитафия")
+@dp.message_handler(lambda message: message.text == "Начать")
 async def process_epitaph_request(message: types.Message, state: FSMContext):
     await state.reset_state()
     await message.answer("*Давайте ответим на несколько простых вопросов для эпитафии💬*", reply_markup=kb.home_kb, parse_mode="Markdown")
@@ -128,6 +128,7 @@ async def answer_epit_question(message: types.Message, state: FSMContext):
 
             await bot.send_sticker(message.chat.id, STIKER2_TOKEN)
             await message.answer(doublepromt, parse_mode="Markdown", reply_markup=kb.choose_bio_kb)
+            await message.answer("Для продолжения нажмите *Биография* (На клавиатуре)", parse_mode="Markdown", reply_markup=kb.choose_bio_kb)
 
 
 
@@ -165,6 +166,7 @@ async def voice_message_handler(message: types.Message,state: FSMContext):
         #Biography = "Родился выдающийся советский композитор Дмитрий Шостакович в Санкт-Петербурге в доме"
         await message.answer("*Итоговая биография*✔️ ️", parse_mode="Markdown")
         await message.answer(Biography, reply_markup=kb.correct_kb)
+        await message.answer("Выберите следующий режим на *Клавиатуре*", reply_markup=kb.correct_kb)
         await state.update_data(edited_biography=Biography)
         await BioForm.saving_biography.set()
 
