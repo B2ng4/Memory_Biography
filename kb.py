@@ -34,9 +34,12 @@ home_kb.add(back_bt)
 """Клава исправления"""
 
 correct_kb = ReplyKeyboardMarkup(resize_keyboard=True)
+save_bt = KeyboardButton(text="Отправить🌐")
 replace_bt = KeyboardButton(text="Редактировать⚙️")
 redactor_bt = KeyboardButton(text="Регенерировать")
-correct_kb.add(replace_bt, redactor_bt)
+correct_kb.add(save_bt)
+correct_kb.add(replace_bt)
+correct_kb.add(redactor_bt)
 
 """Клавиатура сохранения"""
 

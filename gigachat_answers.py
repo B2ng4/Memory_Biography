@@ -20,5 +20,5 @@ def answer3(text1: str):
 
 def answer4(text1: str):
     giga = GigaChat(credentials="Y2Q3MDIzMGItZDY3OS00MjcwLWI1NWEtMGExNTMyMDUzYTAwOjY2YjBiZWM4LTAwOTEtNDEyZi04YWJlLTY3NmU1NTNiNTA5Ng==", verify_ssl_certs=False)
-    response = giga.chat(f"{text1}/Напиши эпитафию, стихотворное изречение. Строго краткое и в рифму. Строго 1 строфа. (1 четверостишье)")
+    response = giga.chat(f"{text1}/Напиши эпитафию, стихотворное изречение. Строго краткое и в рифму. Строго 1 строфа. (1 четверостишье). Ничего лишнего, буквально 30-40 слов")
     return response.choices[0].message.content

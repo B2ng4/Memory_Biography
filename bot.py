@@ -108,7 +108,7 @@ async def process_epitaph_request(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=BioForm.answering_questions_epit)
 async def answer_epit_question(message: types.Message, state: FSMContext):
-
+    global doublepromt
     async with state.proxy() as data:
         if "epit_answers" not in data:
             data["epit_answers"] = []
@@ -146,7 +146,7 @@ async def back_home(message: types.Message):
     types.ContentType.DOCUMENT,
 
 ])
-async def voice_message_handler(message: types.Message):
+async def voice_message_handler(message: types.Message,state: FSMContext):
 
     if message.content_type == types.ContentType.VOICE:
         file_id = message.voice.file_id
@@ -165,6 +165,10 @@ async def voice_message_handler(message: types.Message):
         #Biography = "Родился выдающийся советский композитор Дмитрий Шостакович в Санкт-Петербурге в доме"
         await message.answer("*Итоговая биография*✔️ ️", parse_mode="Markdown")
         await message.answer(Biography, reply_markup=kb.correct_kb)
+        await state.update_data(edited_biography=Biography)
+        await BioForm.saving_biography.set()
+
+
 
     """Регенерация биографии"""
     @dp.message_handler(lambda message: message.text == "Регенерировать")
@@ -193,9 +197,14 @@ async def voice_message_handler(message: types.Message):
         # Извлекаем отредактированную биографию из контекста состояния
         user_data = await state.get_data()
         edited_biography = user_data.get('edited_biography')
-        user = message.from_user.first_name
 
-        if upload_bio(gen[0], gen[1], gen[2], gen[3], gen[4], gen[5], gen[6], gen[7], edited_biography, doublepromt, user):
+        user = message.from_user.first_name
+        print(doublepromt)
+        doublepromt_exit = doublepromt.replace('"', "")
+        print(gen)
+        print(edited_biography)
+
+        if upload_bio(gen[0], gen[1], gen[2], gen[3], gen[4], gen[5], gen[6], gen[7], edited_biography, user=user, epitaphy=doublepromt_exit):
             await message.answer("Биография успешно отправлена!", reply_markup=kb.home_kb)
 
         await state.finish()
