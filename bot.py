@@ -1,11 +1,7 @@
 
 import os
 from pathlib import Path
-import asyncio
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-
 from stt import STT
 from config import TOKEN, STIKER1_TOKEN,  STIKER2_TOKEN
 from questions import  base_questions, epit_questions
@@ -145,6 +141,7 @@ async def back_home(message: types.Message):
 @dp.message_handler(content_types=[
     types.ContentType.VOICE,
     types.ContentType.DOCUMENT,
+    types.ContentType.TEXT
 
 ])
 async def voice_message_handler(message: types.Message,state: FSMContext):
@@ -161,14 +158,18 @@ async def voice_message_handler(message: types.Message,state: FSMContext):
         text = stt.audio_to_text(file_on_disk)
         os.remove(f"{file_id}.tmp")
 
+    elif message.content_type == types.ContentType.TEXT:
+        text = message.text
+        await message.reply("Данные получены ✔️")
+        await message.answer("⚙️⚙️⚙️*Генерирую*⚙️⚙️⚙️", parse_mode="Markdown")
 
-        Biography = answer2(preprompt,text)
-        #Biography = "Родился выдающийся советский композитор Дмитрий Шостакович в Санкт-Петербурге в доме"
-        await message.answer("*Итоговая биография*✔️ ️", parse_mode="Markdown")
-        await message.answer(Biography, reply_markup=kb.correct_kb)
-        await message.answer("Выберите следующий режим на *Клавиатуре*", reply_markup=kb.correct_kb)
-        await state.update_data(edited_biography=Biography)
-        await BioForm.saving_biography.set()
+    Biography = answer2(preprompt,text)
+    #Biography = "Родился выдающийся советский композитор Дмитрий Шостакович в Санкт-Петербурге в доме"
+    await message.answer("*Итоговая биография*✔️ ️", parse_mode="Markdown")
+    await message.answer(Biography, reply_markup=kb.correct_kb)
+    await message.answer("Выберите следующий режим на *Клавиатуре*", parse_mode="Markdown", reply_markup=kb.correct_kb)
+    await state.update_data(edited_biography=Biography)
+    await BioForm.saving_biography.set()
 
 
 
@@ -208,10 +209,14 @@ async def voice_message_handler(message: types.Message,state: FSMContext):
 
         if upload_bio(gen[0], gen[1], gen[2], gen[3], gen[4], gen[5], gen[6], gen[7], edited_biography, user=user, epitaphy=doublepromt_exit):
             await message.answer("Биография успешно отправлена!", reply_markup=kb.home_kb)
+            await message.answer("Созданная страница", reply_markup=kb.url_kb, parse_mode="Markdown")
 
         await state.finish()
 
 
+@dp.message_handler(lambda message: message.text == "🔎 Помощь")
+async def process_bio_request(message: types.Message):
+    await message.answer("Я бот Олег, Я могу генерировать биографию по ключевым словам.\nВам достаточно выбрать 📝 Генерация.\nПотом ответить на пару простых вопросов.", reply_markup=kb.home_kb)
 
 if __name__ == "__main__":
     # Start the bot

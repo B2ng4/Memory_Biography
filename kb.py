@@ -50,3 +50,8 @@ save_bt = KeyboardButton(text="Отправить🌐")
 
 save_kb.add(save_bt)
 save_kb.add(back_bt)
+
+
+"""Кнопка для ссылки"""
+url_bt = InlineKeyboardButton( text="Страница", url="https://mc.dev.rand.agency/page/79051330")
+url_kb = InlineKeyboardMarkup().add(url_bt)
